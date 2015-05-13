@@ -1,10 +1,12 @@
 #!/bin/bash
 
+# the array contains the list of service *names*
+# the actual service corresponding to the name is below
+SERVICES=("LOGGER" "ADAPTER" "CONTROLLER")
+
 LOGGER='src/http_logging/http_logging_server.py'
 ADAPTER='src/adapters/AdapterServer.py'
 CONTROLLER='src/ControllerServer.py'
-
-SERVICES=(LOGGER ADAPTER CONTROLLER)
 
 #PID_FILE='/var/run/ads.pid'
 PID_FILE='ads.pid'
@@ -26,8 +28,7 @@ usage() {
   echo "./manage_services.sh stop SERVICE1 SERVICE2"
 }
 
-# To check if the service entered by the user
-# is valid or not.
+# Utility function: to check if a given array contains a given value
 in_array() {
   local n=$#
   local value=${!n}
@@ -52,24 +53,17 @@ start_service() {
   # If no specific services are mentioned,
   # start all the services.
   if [ -z "$args" ]; then
-    #echo "Starting all services."
-    #for service in $SERVICES; do
-    #  echo $service
-    #  #python $service &
-    #  #echo "SERVICE NAME:$!" >> $PID_FILE
-    #  #sleep 1
-    #done
-
-    python $LOGGER &
-    # The variable "$!" has the PID of the last
-    # background process started.
-    echo "LOGGER:$!" >> $PID_FILE
-    sleep 1
-    python2 $ADAPTER &
-    echo "ADAPTER:$!" >> $PID_FILE
-    sleep 1
-    python2 $CONTROLLER &
-    echo "CONTROLLER:$!" >> $PID_FILE
+    echo "Starting all services."
+    for service in ${SERVICES[@]}; do
+      # from the service get the actual service to start
+      python ${!service} &
+      # enter the pid of the service in our pid file
+      # The variable "$!" has the PID of the last
+      # background process started.
+      echo "$service:$!" >> $PID_FILE
+      sleep 1
+    done
+    exit 0;
 
   else
     # Start the specific services mentioned
