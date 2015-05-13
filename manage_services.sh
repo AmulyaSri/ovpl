@@ -94,7 +94,7 @@ stop_service() {
   if [ -z "$args" ]; then
     if [ -f $PID_FILE ]; then
       for i in `cat $PID_FILE`; do
-        pid=$(echo $i | cut -d ":" -f 2)
+        pid=`echo $i | cut -d ":" -f 2`
         kill $pid
       done
       rm $PID_FILE
@@ -144,7 +144,7 @@ repair_mongod() {
 # Check if the service mongod is already running.
 pre_check() {
   service mongodb status
-  if [ $? -ne 0 ]
+  if [ $? != 0 ]
   then
     echo 'service mongod is not running'
     stop_mongod
@@ -158,13 +158,8 @@ pre_check() {
 
 # If the script is executed alone, all the services
 # are started.
-# COMMENT: why are you using a string comparison - shouldn't it be a number?
-#if [ $# == 0 ]
-if [ $# -eq '0' ]; then
+if [ $# == 0 ]; then
   pre_check
-  # COMMENT: why do you assume that to start a service we need to stop it
-  # first? Shouldn't restart should do that.
-  stop_service
   start_service
   exit 0;
 
@@ -184,9 +179,6 @@ else
 
   if [ "$action" == "start" ]; then
     pre_check
-    # COMMENT: why do you assume that to start a service we need to stop it
-    # first? Shouldn't restart should do that.
-    stop_service "$args"
     start_service "$args"
     exit 0;
 
