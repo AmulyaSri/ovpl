@@ -13,19 +13,17 @@ PID_FILE='ads.pid'
 
 # Correct usage of the script and its valid
 # arguments.
-# COMMENT: Usage should try to print help in the format of well-known, conventional unix
-# utilities. Please see help of any unix utility.
 usage() {
-  echo "Usage:"
-  echo "Valid Services : LOGGER, ADAPTER and CONTROLLER"
-  echo "1. For starting all the services:"
-  echo " a) ./manage_services.sh"
-  echo " b) ./manage_services.sh start"
-  echo "2. For stopping all the services:"
-  echo "./manage_services.sh stop"
-  echo "3. For an individual start or stop:"
-  echo "./manage_services.sh start SERVICE1"
-  echo "./manage_services.sh stop SERVICE1 SERVICE2"
+  echo -e "usage: ./manage_services.sh \t\t\t start all services"
+  echo -e "   or: ./manage_services.sh [action] \t\t perform action on all services "
+  echo -e "   or: ./manage_services.sh [action] [services]  perform action on specified service(s)\n"
+  echo -e "Action:"
+  echo -e "start \t start service(s)"
+  echo -e "stop  \t stop service(s)\n"
+  echo -e "Services:"
+  echo -e "LOGGER"
+  echo -e "ADAPTER"
+  echo -e "CONTROLLER"
 }
 
 # Utility function: to check if a given array contains a given value
@@ -116,7 +114,7 @@ stop_service() {
             kill $pid;
             echo "Stopping service $arg."
             sed -i /$process_name/d $PID_FILE
-            echo "Stopped services."
+            echo "Service stopped."
           fi
         done
       else
