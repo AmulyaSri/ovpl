@@ -53,7 +53,9 @@ def find_available_ip():
         #status = os.system("vzlist -a | grep " + vm_id)
         ret_code = os.system(command)
         #print ret_code
-        if ret_code != 0:
+        if ret_code == 0:
+            return False
+        else:
             return True
                 
     def is_ip_usable(ip):
