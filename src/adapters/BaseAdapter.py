@@ -11,7 +11,11 @@ class BaseAdapter:
 import netaddr
 import sh
 import settings
-
+import re
+from utils.execute_commands import *
+import os
+VZCTL = "/usr/sbin/vzctl"
+VZLIST = "/usr/sbin/vzlist -a"
 
 def find_available_ip():
     # try and ping. if the IP does not respond, (gives wrong return code)
@@ -20,10 +24,38 @@ def find_available_ip():
         try:
             sh.ping(str(ip), c=1)
         except sh.ErrorReturnCode:
+            if is_ctid_free(str(ip)):
+                return True
+            else:
+                return False
+        
+    def is_ctid_free(ip):
+        m = re.match(r'[0-9]+.[0-9]+.([0-9]+).([0-9]+)', ip)
+        vm_id = m.group(1) + m.group(2)
+        command = (r'ssh -o "%s" %s "%s | grep %s"' %
+                   (settings.NO_STRICT_CHECKING,
+                    settings.BASE_IP_ADDRESS,
+                    VZLIST, vm_id))
+        logger.debug("CentOSVZAdapter: vzlist command = %s" %
+                     command)
+                    
+        """
+        try:
+            (ret_code, vzlist) = execute_command(command)
+            if ret_code == 0:
+                return False
+            else:
+                return True
+        except Exception, e:
             return True
-
-        return False
-
+            #raise e        
+        """
+        #status = os.system("vzlist -a | grep " + vm_id)
+        ret_code = os.system(command)
+        #print ret_code
+        if ret_code != 0:
+            return True
+                
     def is_ip_usable(ip):
             # reject IP's like  192.0.2.0 or 192.0.2.255 for subnet 192.0.2.0/24
             return not (ip == ip_network.network or ip == ip_network.broadcast)
