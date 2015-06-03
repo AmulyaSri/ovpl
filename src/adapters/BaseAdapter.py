@@ -47,10 +47,10 @@ def find_available_ip():
             else:
                 return True
         except Exception, e:
-            return True
-            #raise e        
+            #return True
+            raise e        
         """
-        #status = os.system("vzlist -a | grep " + vm_id)
+        #ret_code = os.system("vzlist -a | grep " + vm_id)
         ret_code = os.system(command)
         #print ret_code
         if ret_code == 0:
