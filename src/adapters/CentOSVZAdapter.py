@@ -10,7 +10,7 @@
     3. Logging has not been implemented yet.
 """
 
-__all__ = [
+__public_interfaces__ = [
     'create_vm',
     'start_vm',
     'stop_vm',
@@ -22,7 +22,7 @@ __all__ = [
     'get_resource_utilization',
     'take_snapshot',
     'InvalidVMIDException',
-    ]
+]
 
 # Standard Library imports
 import re
@@ -105,10 +105,12 @@ class CentOSVZAdapter(object):
                     (ret_code, output) = execute_command(command)
 
                     if ret_code == 0:
+                        logger.info("CentOSVZAdapter: VM created with vm_id:\
+                                    %s, vm_ip: %s" % (vm_id, ip_address))
                         return (True, vm_id)
 
         except Exception, e:
-            logger.error("Error creating VM: " + str(e))
+            logger.critical("Error creating VM: %s" % str(e))
             # raise e
             return (False, -1)
 
@@ -122,8 +124,8 @@ class CentOSVZAdapter(object):
         # Return the VM's IP and port info
         response = {"vm_id": vm_id, "vm_ip": get_vm_ip(vm_id),
                     "vmm_port": settings.VM_MANAGER_PORT}
-        logger.debug("CentOSVZAdapter: init_vm(): success = %s, response = %s" %
-                     (success, response))
+        logger.info("CentOSVZAdapter: init_vm(): success = %s, response = %s" %
+                    (success, response))
         return (success, response)
 
     def destroy_vm(self, vm_id):
@@ -149,8 +151,8 @@ class CentOSVZAdapter(object):
                 if ret_code == 0:
                     return "Success"
         except Exception, e:
-            logger.error("Error destroying VM: " + str(e))
-            return "Failed to destroy VM: " + str(e)
+            logger.critical("Error destroying VM: %s" % str(e))
+            return "Failed to destroy VM: %s" % str(e)
 
     def restart_vm(self, vm_id):
         vm_id = validate_vm_id(vm_id)
@@ -163,6 +165,7 @@ class CentOSVZAdapter(object):
                          command)
             (ret_code, output) = execute_command(command)
         except Exception, e:
+            logger.critical("Error restarting VM: %s" % str(e))
             raise e
         return start_vm_manager(vm_id)
 
@@ -185,11 +188,12 @@ class CentOSVZAdapter(object):
                      command)
         try:
             (ret_code, output) = execute_command(command)
+            logger.info("CentOSVZAdapter: start_vm_manager(): started")
             return True
         except Exception, e:
-            logger.error("CentOSVZAdapter: start_vm_manager(): command = %s, \
-                         ERROR = %s" %
-                         (command, str(e)))
+            logger.critical("CentOSVZAdapter: start_vm_manager(): command =\
+                            %s, ERROR = %s" %
+                            (command, str(e)))
             return False
 
     def get_resource_utilization(self):
@@ -205,10 +209,12 @@ class CentOSVZAdapter(object):
             logger.debug("CentOSVZAdapter: stop_vm(): command = %s" %
                          command)
             (ret_code, output) = execute_command(command)
+            logger.info("CentOSVZAdapter: stop_vm(): stopped")
             return "Success"
+            return True
 
         except Exception, e:
-            logger.error("Error stopping VM: " + str(e))
+            logger.critical("Error stopping VM: %s" % str(e))
             return "Failed to stop VM: " + str(e)
 
     def test_logging(self):
@@ -252,7 +258,7 @@ def copy_public_key(vm_id):
         (ret_code, output) = execute_command(command)
         return True
     except Exception, e:
-        logger.error("ERROR = %s" % str(e))
+        logger.critical("ERROR = %s" % str(e))
         return False
 
 
@@ -272,7 +278,7 @@ def copy_files(src_dir, dest_dir):
             logger.debug("Copy Unsuccessful, return code is %s" % str(ret_code))
             return False
     except Exception, e:
-        logger.error("ERROR = %s" % str(e))
+        logger.critical("ERROR = %s" % str(e))
         return False
 
 
@@ -291,7 +297,7 @@ def copy_ovpl_source(vm_id):
     try:
         return copy_files(str(src_dir), str(dest_dir))
     except Exception, e:
-        logger.error("ERROR = %s" % str(e))
+        logger.critical("ERROR = %s" % str(e))
         return False
 
 
@@ -317,7 +323,7 @@ def copy_lab_source(vm_id, lab_repo_name):
     try:
         return copy_files(src_dir, dest_dir)
     except Exception, e:
-        logger.error("ERROR = %s" % str(e))
+        logger.critical("ERROR = %s" % str(e))
         return False
 
 
@@ -344,12 +350,14 @@ def construct_vzctl_args(lab_specz={}):
 
     def get_vm_spec():
         lab_spec = dict2default(lab_specz)
-        vm_spec = {"lab_ID": lab_spec['lab']['description']['id'],
-            "os": lab_spec['lab']['runtime_requirements']['platform']['os'],
-            "os_version": lab_spec['lab']['runtime_requirements']['platform']['osVersion'],
-            "ram": lab_spec['lab']['runtime_requirements']['platform']['memory']['min_required'],
-            "diskspace": lab_spec['lab']['runtime_requirements']['platform']['storage']['min_required'],
-            "swap": lab_spec['lab']['runtime_requirements']['platform']['memory']['swap']
+        platform_details = lab_spec['lab']['runtime_requirements']['platform']
+        vm_spec = {
+            "lab_ID": lab_spec['lab']['description']['id'],
+            "os": platform_details['os'],
+            "os_version": platform_details['osVersion'],
+            "ram": platform_details['memory']['min_required'],
+            "diskspace": platform_details['storage']['min_required'],
+            "swap": platform_details['memory']['swap']
         }
         return vm_spec
 
@@ -430,6 +438,6 @@ if __name__ == "__main__":
     # appropriate methods.
     # test()
     if copy_ovpl_source(584):
-        logger.debug("test Successful")
+        logger.info("test Successful")
     else:
-        logger.debug("test UNSuccessful")
+        logger.info("test Unsuccessful")

@@ -119,14 +119,14 @@ class AWSAdapter(object):
                               dry_run=dry_run)
 
         except Exception, e:
-            logger.debug("AWSAdapter: error creating VM")
-            logger.debug("AWSAdapter: %s" % e)
+            logger.info("AWSAdapter: error creating VM")
+            logger.critical("AWSAdapter: %s" % e)
             return (False, -1)
 
         instance = reservation.instances[0]
 
         instance.add_tag('Name', self.vm_name_tag)
-        logger.debug("AWSAdapter: created VM: %s" % instance)
+        logger.info("AWSAdapter: created VM: %s" % instance)
         # return instance.id
         return (True, instance.id)
 
@@ -155,20 +155,19 @@ class AWSAdapter(object):
         success = self.wait_for_service(vm_ip_addr, 22,
                                         self.TIME_BEFORE_NEXT_RETRY,
                                         config.TIMEOUT)
-
         if not success:
-            logger.debug("Could not reach SSH after %s secs!! Aborting." %
-                         config.TIMEOUT)
+            logger.critical("Could not reach SSH after %s secs!! Aborting." %
+                            config.TIMEOUT)
             return (success, info)
 
         success = self._copy_ovpl_source(vm_ip_addr)
         if not success:
-            logger.debug("Error in copying OVPL sources. Aborting.")
+            logger.critical("Error in copying OVPL sources. Aborting.")
             return (success, info)
 
         success = self._copy_lab_source(vm_ip_addr, lab_repo_name)
         if not success:
-            logger.debug("Error in copying lab sources. Aborting.")
+            logger.critical("Error in copying lab sources. Aborting.")
             return (success, info)
 
         # NOTE: this step is necessary as the systems team is using a single
@@ -176,12 +175,12 @@ class AWSAdapter(object):
         # nodes default gateway has to be configured separately!
         success = self._add_default_gw(vm_ip_addr)
         if not success:
-            logger.debug("Error in adding default gateway. Aborting.")
+            logger.critical("Error in adding default gateway. Aborting.")
             return (success, info)
 
         success = self.start_vm_manager(vm_ip_addr)
         if not success:
-            logger.debug("Error in starting VMManager. Aborting.")
+            logger.critical("Error in starting VMManager. Aborting.")
             return (success, info)
 
         # check if the VMManager service came up and running..
@@ -192,12 +191,12 @@ class AWSAdapter(object):
                                         self.TIME_BEFORE_NEXT_RETRY,
                                         config.TIMEOUT)
         if not success:
-            logger.debug("Could not reach VMManager after %s secs!! Aborting." %
-                         config.TIMEOUT)
+            logger.critical("Could not reach VMManager after %s secs!! Aborting." %
+                            config.TIMEOUT)
             return (success, info)
 
-        logger.debug("AWSAdapter: init_vm(): success = %s, response = %s" %
-                     (success, info))
+        logger.info("AWSAdapter: init_vm: success = %s, response = %s" %
+                    (success, info))
 
         return (success, info)
 
@@ -241,8 +240,8 @@ class AWSAdapter(object):
         try:
             execute_command(command)
         except Exception, e:
-            logger.error("AWSAdapter: start_vm_manager(): " +
-                         "command = %s, ERROR = %s" % (command, str(e)))
+            logger.critical("AWSAdapter: start_vm_manager(): " +
+                            "command = %s, ERROR = %s" % (command, str(e)))
             return False
 
         return True
@@ -303,8 +302,8 @@ class AWSAdapter(object):
             logger.debug("AWSAdapter: VM %s: port: %s is up.." % (vm_ip, port))
             return True
         except socket.error as e:
-            logger.debug("AWSAdapter: VM %s: Error connecting to port: %s: %s" %
-                         (vm_ip, port, e))
+            logger.critical("AWSAdapter: VM %s: Error connecting to port: %s: %s" %
+                            (vm_ip, port, e))
             logger.debug("AWSAdapter: retrying to reach port %s.." % port)
             s.close()
             return False
@@ -349,7 +348,7 @@ class AWSAdapter(object):
                              str(ret_code))
                 return False
         except Exception, e:
-            logger.error("ERROR = %s" % str(e))
+            logger.critical("ERROR = %s" % str(e))
             return False
 
     # copy the ADS source into the newly created lab VM
@@ -366,8 +365,7 @@ class AWSAdapter(object):
         try:
             return self._copy_files(src_dir, dest_dir)
         except Exception, e:
-            logger.error("ERROR = %s" % str(e))
-            print 'ERROR= %s' % (str(e))
+            logger.critical("ERROR = %s" % str(e))
             return False
 
     # copy the lab source into the newly created lab VM
@@ -383,8 +381,7 @@ class AWSAdapter(object):
         try:
             return self._copy_files(src_dir, dest_dir)
         except Exception, e:
-            logger.error("ERROR = %s" % str(e))
-            print 'ERROR= %s' % (str(e))
+            logger.critical("ERROR = %s" % str(e))
             return False
 
     # NOTE: this step is necessary as the systems team is using a single
