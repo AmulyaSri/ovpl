@@ -78,7 +78,7 @@ class LoginHandler(BaseHandler):
         assertion = self.get_argument("assertion")
 
         if not assertion:
-            logger.debug("Assertion not passed by the client. Aborting.")
+            logger.info("Assertion not passed by the client. Aborting.")
             self.write_error(400)
             return
 
@@ -91,7 +91,7 @@ class LoginHandler(BaseHandler):
             data=data, verify=True)
 
         if not resp.ok:
-            logger.debug("Response from Persona is malformed. Aborting auth.")
+            logger.critical("Response from Persona is malformed. Aborting auth.")
             self.write_error(500)
             return
 
@@ -99,7 +99,7 @@ class LoginHandler(BaseHandler):
         logger.debug("Verified data from Persona: %s" % verified_data)
 
         if verified_data['status'] != 'okay':
-            logger.debug("Persona returned error. Aborting authentication.")
+            logger.critical("Persona returned error. Aborting authentication.")
             self.write_error(500)
             return
 
@@ -111,7 +111,7 @@ class LoginHandler(BaseHandler):
             self.write({'status': 'okay', 'msg': "Successful login"})
         # user does not exist. Send unauthorized error.
         else:
-            logger.debug("User: %s is not authorized. Aborting." % user_email)
+            logger.error("User: %s is not authorized. Aborting." % user_email)
             msg = "<b>Oops!</b> You are not authorized to deploy a lab. <br>"
             msg += "<small>Please contact <some> admin for details.</small>"
             self.write({'status': 'error', 'msg': msg})

@@ -27,7 +27,7 @@ def get_lab_reqs(lab_src_url, version=None):
         checkout_version(repo_name, version)
         return get_lab_spec(repo_name)
     except Exception, e:
-        logger.error("Error: %s" % str(e))
+        logger.critical("Error: %s" % str(e))
         raise e
 
 
@@ -57,14 +57,14 @@ def test_lab(vmmgr_ip, port, lab_src_url, version=None):
         time.sleep(i)
         try:
             response = requests.post(url=url, data=payload)
-            logger.debug("response = %s" % response)
+            logger.info("response = %s" % response)
             return ("Success" in response.text, response.text)
         except Exception, e:
             exception_str = str(e)
             attempts = {0: 'first', 1: 'second', 2: 'third', 3: 'fourth'}
-            logger.error("Error installing lab on VM for the %s" %
-                         "attempt with error: %s" %
-                         (attempts[math.log(i)/math.log(2)], str(e)))
+            logger.critical("Error installing lab on VM for the %s" %
+                            "attempt with error: %s" %
+                            (attempts[math.log(i) / math.log(2)], str(e)))
     return (False, exception_str)
 
 if __name__ == '__main__':

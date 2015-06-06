@@ -9,7 +9,7 @@ list of VMs via corresponding VMProxy objects.
 __all__ = [
     'VMProxy',
     'VMPool',
-    ]
+]
 
 import json
 import requests
@@ -92,8 +92,8 @@ class VMPool:
 
         try:
             result = requests.post(url=adapter_url, data=payload)
-            logger.debug("VMPool: create_vm(): Response text from adapter: " +
-                         result.text)
+            logger.info("VMPool: create_vm(): Response text from adapter: %s" %
+                        result.text)
             if result.status_code == requests.codes.ok:
                 vm_id = result.json()["vm_id"]
                 vm_ip = result.json()["vm_ip"]
@@ -103,8 +103,8 @@ class VMPool:
                 raise Exception("VMPool: create_vm(): Error creating VM: " +
                                 result.text)
         except Exception, e:
-            logger.error("VMPool: create_vm(): Error communicating with" +
-                         "adapter: " + str(e))
+            logger.critical("VMPool: create_vm(): Error communicating with %s" %
+                            "adapter: " + str(e))
             raise Exception("VMPool: create_vm(): Error creating VM: " + str(e))
 
     def destroy_vm(self, vm_id):
@@ -117,20 +117,19 @@ class VMPool:
         try:
             result = requests.post(url=adapter_url, data=payload)
             logger.debug("Response text from adapter: " + result.text)
-            if (result.status_code == requests.codes.ok and
-               "Success" in result.text):
-                logger.debug("VMPool.destroy_vm()")
+            if (result.status_code == requests.codes.ok and "Success" in result.text):
+                logger.info("VMPool.destroy_vm()")
                 return True
             else:
-                logger.error("Error destroying vm: " + result.text)
+                logger.critical("Error destroying vm: " + result.text)
         except Exception, e:
-            logger.error("Error communicating with adapter: " + str(e))
+            logger.critical("Error communicating with adapter: " + str(e))
 
     def save_state(self, lab_id, vm_id):
         for r in self.system.state:
             if (r['lab_spec']['lab_id'] == lab_id and
-               r['vm_info']['vm_id'] == vm_id and
-               r['vmpool_info']['vmpool_id'] == self.vmpool_id):
+                r['vm_info']['vm_id'] == vm_id and
+                r['vmpool_info']['vmpool_id'] == self.vmpool_id):
                 self.system.state.remove(r)
                 self.system.save()
                 break

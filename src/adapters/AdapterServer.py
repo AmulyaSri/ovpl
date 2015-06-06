@@ -49,7 +49,7 @@ class CreateVMHandler(tornado.web.RequestHandler):
 
         if not success:
             self.set_status(500)
-            logger.debug(debug_string)
+            logger.error(debug_string)
         else:
             logger.debug(debug_string)
 
@@ -85,10 +85,10 @@ if __name__ == "__main__":
         config_spec = json.loads(open(e.get_ovpl_directory_path() +
                                       "/config/config.json").read())
     except IOError as e:
-        logger.error("unable to load config.json. Exception: " + str(e))
+        logger.critical("unable to load config.json. Exception: " + str(e))
         raise e
     except Exception as e:
-        logger.error("unable to parse config.json. Exception: " + str(e))
+        logger.critical("unable to parse config.json. Exception: " + str(e))
         raise e
 
     # load the adapter class and instantiate the adapter

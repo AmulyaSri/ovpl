@@ -20,11 +20,11 @@ from utils.execute_commands import *
 def execute(command):
     # do some validation
     try:
-        logger.info("Command executed: " + command)
+        logger.debug("Command executed: " + command)
         (ret_code, output) = execute_command(command)
         return output
     except Exception, e:
-        logger.error("Execution failed: " + str(e))
+        logger.critical("Execution failed: " + str(e))
         return "Error executing the command: " + str(e)
 
 
